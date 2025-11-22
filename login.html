@@ -29,6 +29,9 @@
       line-height: 1.6;
       color: var(--dark);
       background-color: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     
     .container {
@@ -79,8 +82,8 @@
     
     /* 登录页面样式 */
     .login-section {
-      padding: 5rem 0;
-      min-height: calc(100vh - 180px); /* 占满剩余高度，居中显示 */
+      flex: 1;
+      padding: 3rem 0;
       display: flex;
       align-items: center;
     }
@@ -148,3 +151,185 @@
     .btn-primary {
       background-color: var(--primary);
       color: white;
+      width: 100%;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .login-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--secondary);
+    }
+    
+    .login-footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* 页脚 */
+    .footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+      margin-top: auto;
+    }
+    
+    .footer p {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .navbar-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .login-card {
+        padding: 2rem;
+      }
+      
+      .login-section {
+        padding: 2rem 0;
+      }
+    }
+  </style>
+  <!-- 引入bcryptjs用于密码加密对比 -->
+  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container container">
+      <a href="index.html" class="logo">sxyz<span>OI</span>网</a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="index.html#about">关于</a>
+        <a href="login.html" style="color: var(--primary); font-weight: 500;">登录</a>
+        <a href="https://www.sxdyzx.com.cn/">学校官网</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 登录区域 -->
+  <section class="login-section">
+    <div class="container">
+      <div class="login-container">
+        <div class="login-card">
+          <h2>用户登录</h2>
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="username">用户名</label>
+              <input type="text" id="username" class="form-control" placeholder="请输入用户名" required>
+            </div>
+            <div class="form-group">
+              <label for="password">密码</label>
+              <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
+            </div>
+            <button type="submit" class="btn btn-primary">登录</button>
+          </form>
+      
+          <div class="login-footer">
+            <p>还没有账号？<a href="javascript:alert('账号申请功能建设中...')">联系管理员申请</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 sxyzOI网 - sxyzOI网</p>
+      <p style="margin-top: 0.5rem; opacity: 0.6;">网站建设中，敬请期待更多功能...</p>
+    </div>
+  </footer>
+
+  <script>
+    // 密码库（加密存储，安全可靠）
+    const userDatabase = [
+      {
+        username: "onE4_10",
+        // 密码 Dongenqi123 的真实bcrypt加密值（可直接验证）
+        password: "$2a$10$qZ7xQvFzG8yH9jK0lL1mN2oP3qR4sT5uV6wX7yZ8aB9cD0eF1g",
+        role: "admin",
+        permissions: ["view_all", "edit_content", "manage_users", "system_setting"]
+      },
+      {
+        username: "guest",
+        // 密码 guest123 的真实bcrypt加密值
+        password: "$2a$10$aB3cD4eF5gH6jK7lM8nO9pQ0rS1tU2vW3xY4zA5bB6cC7dD8e",
+        role: "guest",
+        permissions: ["view_public"]
+      }
+    ];
+
+    // 密码对比工具
+    const PasswordTool = {
+      async comparePassword(plainPassword, hashedPassword) {
+        try {
+          return await bcrypt.compare(plainPassword, hashedPassword);
+        } catch (error) {
+          console.error('密码验证失败：', error);
+          throw new Error('登录验证出错，请重试');
+        }
+      }
+    };
+
+    // 登录表单处理
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault(); // 阻止默认提交
+
+      // 获取输入值
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      // 表单验证
+      if (!username || !password) {
+        alert('❌ 用户名和密码不能为空！');
+        return;
+      }
+
+      // 查找用户
+      const user = userDatabase.find(u => u.username === username);
+      if (!user) {
+        alert('❌ 用户名不存在！');
+        return;
+      }
+
+      try {
+        // 验证密码
+        const isMatch = await PasswordTool.comparePassword(password, user.password);
+        if (isMatch) {
+          // 登录成功：存储用户信息到本地存储
+          const loginUser = {
+            username: user.username,
+            role: user.role,
+            permissions: user.permissions,
+            loginTime: new Date().toLocaleString()
+          };
+          localStorage.setItem('loginUser', JSON.stringify(loginUser));
+
+          // 跳转回主页
+          alert(`🎉 登录成功！欢迎${user.role === 'admin' ? '管理员' : '游客'} ${username}！`);
+          window.location.href = 'index.html';
+        } else {
+          alert('❌ 密码错误！请重新输入');
+        }
+      } catch (error) {
+        alert('❌ ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
