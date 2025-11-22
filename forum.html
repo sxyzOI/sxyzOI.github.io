@@ -215,9 +215,32 @@
       color: var(--secondary);
       margin-bottom: 1rem;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3; /* 增加显示行数，适配长内容预览 */
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+    
+    /* Markdown样式适配 */
+    .post-content strong, .modal-body strong {
+      color: var(--dark);
+      font-weight: 600;
+    }
+    .post-content em, .modal-body em {
+      font-style: italic;
+      color: var(--secondary);
+    }
+    .post-content .highlight, .modal-body .highlight {
+      background-color: #fef3c7;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .post-content ul, .modal-body ul {
+      list-style: disc;
+      margin: 1rem 0 1rem 2rem;
+    }
+    .post-content li, .modal-body li {
+      margin-bottom: 0.5rem;
     }
     
     .post-footer {
@@ -561,4 +584,381 @@
       <h2 id="formTitle">发布新帖子</h2>
       <form id="postForm">
         <input type="hidden" id="editPostId"> <!-- 编辑时存储帖子ID -->
-        <div class="
+        <div class="form-group">
+          <label for="postTitle">帖子标题</label>
+          <input type="text" id="postTitle" class="form-control" placeholder="请输入帖子标题" required>
+        </div>
+        <div class="form-group">
+          <label for="postCategory">分类</label>
+          <input type="text" id="postCategory" class="form-control" placeholder="例如：算法入门、比赛经验" required>
+        </div>
+        <div class="form-group">
+          <label for="postContent">帖子内容</label>
+          <textarea id="postContent" class="form-control" placeholder="请输入帖子详细内容" required></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" id="cancelPost">取消</button>
+          <button type="submit" class="btn btn-primary">发布</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 sxyzOI网 - sxyzOI网</p>
+      <p style="margin-top: 0.5rem; opacity: 0.6;">网站建设中，敬请期待更多功能...</p>
+    </div>
+  </footer>
+
+  <script>
+    // ====================== 本地存储工具 ======================
+    const StorageTool = {
+      // 获取帖子列表
+      getPosts() {
+        const posts = localStorage.getItem('sxyzoi_posts');
+        return posts ? JSON.parse(posts) : [
+          // 新增你的帖子作为默认初始帖子
+          {
+            id: 1,
+            title: "雷：进食后人",
+            category: "比赛经验",
+            content: "# 这是一个悲伤的故事\n\n首先，发表一下我的感想：\n\n这次主要还是**能力的欠缺**吧，因为确实加上爆0的分也拿不到省1，主要总结一下错误的原因：\n\n1. **过于轻视数据的强度了**\n   感觉用纯贪心的分能比特殊性质稍微高一点，所以用了贪心而不是特殊性质来做，实际得分贪心只有特殊性质的一半 😭\n\n2. **没有计算好空间**\n   还是不太有经验吧，因为想着以前开一个 `1e9+10` 的桶还是可以存下的，所以就整了个 `1e4+10` 的错误捏～\n   如你们所见，我的用户名已经改成 `1e4+10` 了（纪念这个愚蠢的错误）\n\n---\n\n## 进食后人（总结）\n\n首先，计算好空间\n其次，相信数据强度\n然后就没了～",
+            author: "onE4_10",
+            createTime: "2025-01-15",
+            viewCount: 18,
+            commentCount: 2
+          }
+        ];
+      },
+
+      // 保存帖子列表
+      savePosts(posts) {
+        localStorage.setItem('sxyzoi_posts', JSON.stringify(posts));
+      },
+
+      // 添加新帖子
+      addPost(post) {
+        const posts = this.getPosts();
+        const newId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1;
+        const newPost = {
+          id: newId,
+          ...post,
+          viewCount: 0,
+          commentCount: 0,
+          createTime: new Date().toLocaleDateString()
+        };
+        posts.unshift(newPost); // 新增帖子排在最前面
+        this.savePosts(posts);
+        return newPost;
+      },
+
+      // 更新帖子
+      updatePost(id, updatedPost) {
+        const posts = this.getPosts();
+        const index = posts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          posts[index] = { ...posts[index], ...updatedPost };
+          this.savePosts(posts);
+          return posts[index];
+        }
+        return null;
+      },
+
+      // 删除帖子
+      deletePost(id) {
+        let posts = this.getPosts();
+        posts = posts.filter(p => p.id !== id);
+        this.savePosts(posts);
+        return posts;
+      },
+
+      // 根据ID获取帖子
+      getPostById(id) {
+        const posts = this.getPosts();
+        return posts.find(p => p.id === id) || null;
+      },
+
+      // 增加帖子浏览量
+      increaseViewCount(id) {
+        const posts = this.getPosts();
+        const index = posts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          posts[index].viewCount++;
+          this.savePosts(posts);
+        }
+      }
+    };
+
+    // ====================== 页面初始化 ======================
+    let loginUser = JSON.parse(localStorage.getItem('loginUser')); // 当前登录用户
+    const postListEl = document.getElementById('postList');
+    const noPostsEl = document.getElementById('noPosts');
+    const createPostBtn = document.getElementById('createPostBtn');
+    const postFormModal = document.getElementById('postFormModal');
+    const postDetailModal = document.getElementById('postDetailModal');
+    const postForm = document.getElementById('postForm');
+
+    // 初始化页面状态
+    window.onload = function() {
+      // 初始化用户状态（显示/隐藏登录信息、发布按钮）
+      initUserStatus();
+      // 渲染帖子列表
+      renderPostList();
+      // 绑定事件监听
+      bindEvents();
+    };
+
+    // ====================== 功能函数 ======================
+    // 初始化用户状态
+    function initUserStatus() {
+      const userInfo = document.getElementById('userInfo');
+      const usernameDisplay = document.getElementById('usernameDisplay');
+      const userRole = document.getElementById('userRole');
+      const loginLink = document.getElementById('loginLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (loginUser) {
+        // 已登录：显示用户信息，隐藏登录链接
+        userInfo.style.display = 'flex';
+        usernameDisplay.textContent = `欢迎，${loginUser.username}`;
+        userRole.textContent = loginUser.role === 'admin' ? '管理员' : '游客';
+        loginLink.style.display = 'none';
+
+        // 管理员显示发布帖子按钮
+        if (loginUser.role === 'admin') {
+          createPostBtn.style.display = 'block';
+        }
+
+        // 退出登录
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('loginUser');
+          window.location.reload();
+        });
+      } else {
+        // 未登录：隐藏用户信息，显示登录链接
+        userInfo.style.display = 'none';
+        loginLink.style.display = 'block';
+        createPostBtn.style.display = 'none';
+      }
+    }
+
+    // 渲染帖子列表
+    function renderPostList() {
+      const posts = StorageTool.getPosts();
+      
+      // 显示无帖子提示或帖子列表
+      if (posts.length === 0) {
+        postListEl.style.display = 'none';
+        noPostsEl.style.display = 'block';
+        return;
+      }
+
+      postListEl.style.display = 'grid';
+      noPostsEl.style.display = 'none';
+
+      // 清空现有列表
+      postListEl.innerHTML = '';
+
+      // 渲染每个帖子
+      posts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = 'post-card';
+        postCard.dataset.postId = post.id;
+
+        // 处理帖子内容预览（转换Markdown为HTML，适配预览）
+        let previewContent = post.content
+          .replace(/#.*$/gm, '') // 移除标题
+          .replace(/\*\*(.*?)\*\*/g, '$1') // 移除粗体标记
+          .replace(/`(.*?)`/g, '$1') // 移除代码标记
+          .replace(/---/g, '') // 移除分隔线
+          .replace(/\n/g, '<br>');
+
+        // 帖子操作按钮（仅管理员或帖子作者可见）
+        const actionBtns = loginUser && (loginUser.role === 'admin' || loginUser.username === post.author) 
+          ? `
+            <div class="post-actions">
+              <button class="post-btn edit-btn" data-id="${post.id}">编辑</button>
+              <button class="post-btn delete-btn" data-id="${post.id}">删除</button>
+            </div>
+          `
+          : '';
+
+        postCard.innerHTML = `
+          <div class="post-header">
+            <h2 class="post-title"><a href="javascript:;" class="post-link" data-id="${post.id}">${post.title}</a></h2>
+            <div class="post-meta">
+              <span>${post.createTime}</span>
+              <span>${post.category}</span>
+            </div>
+          </div>
+          <div class="post-content">${previewContent}</div>
+          <div class="post-footer">
+            <span>作者：<span class="post-author">${post.author}</span></span>
+            <div class="post-stats">
+              <div class="stat-item">👁️ ${post.viewCount}</div>
+              <div class="stat-item">💬 ${post.commentCount}</div>
+            </div>
+            ${actionBtns}
+          </div>
+        `;
+
+        postListEl.appendChild(postCard);
+      });
+    }
+
+    // 显示帖子详情
+    function showPostDetail(id) {
+      const post = StorageTool.getPostById(id);
+      if (!post) return;
+
+      // 增加浏览量
+      StorageTool.increaseViewCount(id);
+
+      // 处理Markdown内容转换为HTML
+      let htmlContent = post.content
+        .replace(/# (.*?)\n/g, '<h1>$1</h1>') // 一级标题
+        .replace(/## (.*?)\n/g, '<h2>$1</h2>') // 二级标题
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 粗体
+        .replace(/`(.*?)`/g, '<span class="highlight">$1</span>') // 代码片段
+        .replace(/---/g, '<hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--gray-light);">') // 分隔线
+        .replace(/\n/g, '<br>') // 换行
+        .replace(/1\. (.*?)(?=\n|$)/g, '<ul><li>$1</li></ul>') // 列表项
+        .replace(/其次，(.*?)(?=\n|$)/g, '<li>$1</li>')
+        .replace(/然后(.*?)(?=\n|$)/g, '<li>$1</li>');
+
+      // 填充模态框内容
+      document.getElementById('modalPostTitle').textContent = post.title;
+      document.getElementById('modalPostContent').innerHTML = htmlContent;
+      document.getElementById('modalPostFooter').innerHTML = `
+        作者：<span class="post-author">${post.author}</span> | 
+        发布时间：${post.createTime} | 
+        浏览：${post.viewCount + 1} 次 | 
+        评论：${post.commentCount} 条
+      `;
+
+      // 显示模态框
+      postDetailModal.classList.add('active');
+    }
+
+    // 打开发布/编辑帖子表单
+    function openPostForm(postId = null) {
+      const formTitle = document.getElementById('formTitle');
+      const editPostId = document.getElementById('editPostId');
+      const postTitleInput = document.getElementById('postTitle');
+      const postCategoryInput = document.getElementById('postCategory');
+      const postContentInput = document.getElementById('postContent');
+
+      if (postId) {
+        // 编辑模式：填充现有帖子内容
+        const post = StorageTool.getPostById(postId);
+        if (!post) return;
+
+        formTitle.textContent = '编辑帖子';
+        editPostId.value = postId;
+        postTitleInput.value = post.title;
+        postCategoryInput.value = post.category;
+        postContentInput.value = post.content;
+      } else {
+        // 发布模式：清空表单
+        formTitle.textContent = '发布新帖子';
+        editPostId.value = '';
+        postTitleInput.value = '';
+        postCategoryInput.value = '';
+        postContentInput.value = '';
+      }
+
+      // 显示表单模态框
+      postFormModal.classList.add('active');
+    }
+
+    // ====================== 事件绑定 ======================
+    function bindEvents() {
+      // 发布帖子按钮点击
+      createPostBtn.addEventListener('click', () => openPostForm());
+
+      // 取消发布/编辑
+      document.getElementById('cancelPost').addEventListener('click', () => {
+        postFormModal.classList.remove('active');
+      });
+
+      // 关闭帖子详情
+      document.getElementById('closeDetailModal').addEventListener('click', () => {
+        postDetailModal.classList.remove('active');
+      });
+
+      // 点击模态框外部关闭
+      postDetailModal.addEventListener('click', (e) => {
+        if (e.target === postDetailModal) postDetailModal.classList.remove('active');
+      });
+      postFormModal.addEventListener('click', (e) => {
+        if (e.target === postFormModal) postFormModal.classList.remove('active');
+      });
+
+      // 帖子表单提交（发布/编辑）
+      postForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const editPostId = document.getElementById('editPostId').value;
+        const postData = {
+          title: document.getElementById('postTitle').value.trim(),
+          category: document.getElementById('postCategory').value.trim(),
+          content: document.getElementById('postContent').value.trim(),
+          author: loginUser.username // 作者为当前登录用户
+        };
+
+        if (editPostId) {
+          // 编辑帖子
+          StorageTool.updatePost(Number(editPostId), postData);
+          alert('✅ 帖子编辑成功！');
+        } else {
+          // 发布新帖子
+          StorageTool.addPost(postData);
+          alert('✅ 帖子发布成功！');
+        }
+
+        // 关闭模态框，重新渲染列表
+        postFormModal.classList.remove('active');
+        renderPostList();
+      });
+
+      // 帖子列表点击事件（查看详情、编辑、删除）
+      postListEl.addEventListener('click', (e) => {
+        const postLink = e.target.closest('.post-link');
+        const editBtn = e.target.closest('.edit-btn');
+        const deleteBtn = e.target.closest('.delete-btn');
+
+        if (postLink) {
+          // 查看帖子详情
+          const postId = Number(postLink.dataset.id);
+          showPostDetail(postId);
+        } else if (editBtn) {
+          // 编辑帖子（需登录）
+          if (!loginUser) {
+            alert('❌ 请先登录后再编辑帖子！');
+            window.location.href = 'login.html';
+            return;
+          }
+          const postId = Number(editBtn.dataset.id);
+          openPostForm(postId);
+        } else if (deleteBtn) {
+          // 删除帖子（需登录）
+          if (!loginUser) {
+            alert('❌ 请先登录后再删除帖子！');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          if (confirm('⚠️ 确定要删除这个帖子吗？删除后不可恢复！')) {
+            const postId = Number(deleteBtn.dataset.id);
+            StorageTool.deletePost(postId);
+            renderPostList();
+            alert('✅ 帖子删除成功！');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
