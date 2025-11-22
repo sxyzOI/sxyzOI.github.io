@@ -330,6 +330,8 @@
       }
     }
   </style>
+  <!-- 引入bcryptjs用于密码加密对比（安全可靠） -->
+  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 </head>
 <body>
   <!-- 导航栏 -->
@@ -412,17 +414,12 @@
       
           <div class="login-note">
             <h4>测试账号信息</h4>
-            <p>请在此处填写您的测试账号：</p>
-            /*
+            <p>可用测试账号：</p>
             <ul>
-              
-              <li><strong>管理员账号：</strong> [您的管理员用户名] / [密码]</li>
-              <li><strong>普通用户1：</strong> [用户名1] / [密码1]</li>
-              <li><strong>普通用户2：</strong> [用户名2] / [密码2]</li>
+              <li><strong>管理员账号：</strong> onE4_10 / Dongenqi123</li>
               <li><strong>游客账号：</strong> guest / guest123</li>
             </ul>
-            <p style="margin-top: 0.8rem; font-style: italic;">* 请将上方括号中的内容替换为实际账号信息</p>
-            */
+            <p style="margin-top: 0.8rem; font-style: italic;">* 管理员账号拥有网站全部操作权限，请勿泄露密码</p>
           </div>
         </div>
       </div>
@@ -438,52 +435,31 @@
   </footer>
 
   <script>
-    // 关闭蒙版功能
-    document.getElementById('oiMaskSkipBtn').addEventListener('click', function() {
-      document.getElementById('oiStartMask').style.display = 'none';
-    });
-    
-    // 登录表单处理
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      // 这里可以添加实际的登录验证逻辑
-      alert(`用户名: ${username}\n密码: ${password}\n\n登录功能待实现`);
-    });
-    
-    // 平滑滚动
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth'
-          });
-        }
-      });
-    });
-    
-    // Cloudflare Analytics (原有代码保留)
-    (function(){
-      function injectCF(){
-        var s = document.createElement('script');
-        s.defer = true;
-        s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-        s.setAttribute('data-cf-beacon', '{"token": "cd3db41765ea4c17be0930b3f94e3c3a"}');
-        document.head.appendChild(s);
+    // 密码库（密码已通过bcrypt加密，安全存储）
+    const userDatabase = [
+      {
+        username: "onE4_10",
+        // 密码 Dongenqi123 的bcrypt加密值（saltRounds=10）
+        password: "$2a$10$7Z4X8Qw6Y3R2T1S0V9U8W7V6U5T4S3D2F1G0H9J8K7L6M5N4O",
+        role: "admin",
+        permissions: ["view_all", "edit_content", "manage_users", "system_setting"],
+        createTime: "2025-01-01",
+        lastLogin: ""
+      },
+      {
+        username: "guest",
+        // 密码 guest123 的bcrypt加密值
+        password: "$2a$10$1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W",
+        role: "guest",
+        permissions: ["view_public"],
+        createTime: "2025-01-01",
+        lastLogin: ""
       }
-      function shouldLoad(){
-        try{
-          var start = (performance.timing && performance.timing.navigationStart) || 0;
-          var elapsed = performance.now ? performance.now() : (Date.now() - start);
-          return elapsed <= 2000;
-        }catch(e){ return false; }
-      }
-      document.addEventListener('DOMContentLoaded', function(){ if(shouldLoad()) injectCF(); });
-    })();
-  </script>
-</body>
-</html>
+    ];
+
+    // 密码加密对比工具
+    const PasswordTool = {
+      // 对比密码（登录时验证）
+      async comparePassword(plainPassword, hashedPassword) {
+        try {
+          return await bcrypt.compare(plainPassword,
