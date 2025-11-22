@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>sxyzOI网</title>
+  <title>sxyzOI网 - 首页</title>
   <style>
     /* 全局样式 */
     * {
@@ -62,9 +62,43 @@
       color: var(--primary);
     }
     
+    /* 登录用户信息 */
+    .user-info {
+      position: absolute;
+      top: 1rem;
+      left: 2rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .user-info .user-role {
+      font-size: 0.8rem;
+      background-color: var(--primary);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    
+    .logout-btn {
+      background-color: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .logout-btn:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    
     .nav-links {
       display: flex;
       gap: 2rem;
+      margin-left: auto; /* 右对齐导航链接 */
     }
     
     .nav-links a {
@@ -147,109 +181,13 @@
       font-weight: 500;
     }
     
-    /* 登录页面样式 */
-    .login-section {
-      padding: 3rem 0 5rem;
-    }
-    
-    .login-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .login-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-      padding: 2rem;
-    }
-    
-    .login-card h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      color: var(--dark);
-    }
-    
-    .form-group {
-      margin-bottom: 1.2rem;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: var(--secondary);
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border: 1px solid var(--gray-light);
-      border-radius: 6px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    
-    .btn {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s;
-      border: none;
-      font-size: 1rem;
-    }
-    
-    .btn-primary {
-      background-color: var(--primary);
-      color: white;
-      width: 100%;
-    }
-    
-    .btn-primary:hover {
-      background-color: var(--primary-dark);
-    }
-    
-    .login-note {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background-color: #f0f9ff;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      color: var(--secondary);
-    }
-    
-    .login-note h4 {
-      margin-bottom: 0.5rem;
-      color: var(--dark);
-    }
-    
-    .login-note ul {
-      list-style: disc;
-      margin-left: 1.5rem;
-      margin-top: 0.5rem;
-    }
-    
-    .login-note li {
-      margin-bottom: 0.3rem;
-    }
-    
     /* 页脚 */
     .footer {
       background-color: var(--dark);
       color: white;
       padding: 2rem 0;
       text-align: center;
+      margin-top: 2rem;
     }
     
     .footer p {
@@ -261,6 +199,20 @@
       .navbar-container {
         flex-direction: column;
         gap: 1rem;
+        position: relative;
+      }
+      
+      .user-info {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 1rem;
+      }
+      
+      .nav-links {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
       }
       
       .hero h1 {
@@ -272,18 +224,23 @@
       }
     }
   </style>
-  <!-- 引入bcryptjs用于密码加密对比（安全可靠） -->
-  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 </head>
 <body>
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="navbar-container container">
-      <a href="#" class="logo">sxyz<span>OI</span>网</a>
+      <!-- 登录用户信息（默认隐藏，登录后显示） -->
+      <div id="userInfo" class="user-info" style="display: none;">
+        <span id="usernameDisplay"></span>
+        <span id="userRole" class="user-role"></span>
+        <button id="logoutBtn" class="logout-btn">退出登录</button>
+      </div>
+      
+      <a href="index.html" class="logo">sxyz<span>OI</span>网</a>
       <div class="nav-links">
         <a href="#home">首页</a>
         <a href="#about">关于</a>
-        <a href="#login">登录</a>
+        <a href="login.html" id="loginLink">登录</a>
         <a href="https://www.sxdyzx.com.cn/">学校官网</a>
       </div>
     </div>
@@ -320,38 +277,6 @@
     </div>
   </section>
 
-  <!-- 登录区域 -->
-  <section id="login" class="login-section">
-    <div class="container">
-      <div class="login-container">
-        <div class="login-card">
-          <h2>用户登录</h2>
-          <form id="loginForm">
-            <div class="form-group">
-              <label for="username">用户名</label>
-              <input type="text" id="username" class="form-control" placeholder="请输入用户名" required>
-            </div>
-            <div class="form-group">
-              <label for="password">密码</label>
-              <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
-            </div>
-            <button type="submit" class="btn btn-primary">登录</button>
-          </form>
-      
-          <div class="login-note">
-            <h4>测试账号信息</h4>
-            <p>可用测试账号：</p>
-            <ul>
-              <li><strong>管理员账号：</strong> onE4_10 / Dongenqi123</li>
-              <li><strong>游客账号：</strong> guest / guest123</li>
-            </ul>
-            <p style="margin-top: 0.8rem; font-style: italic;">* 管理员账号拥有网站全部操作权限，请勿泄露密码</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- 页脚 -->
   <footer class="footer">
     <div class="container">
@@ -361,95 +286,35 @@
   </footer>
 
   <script>
-    // 密码库（密码已通过bcrypt加密，安全存储）
-    const userDatabase = [
-      {
-        username: "onE4_10",
-        // 密码 Dongenqi123 的真实bcrypt加密值（saltRounds=10，可直接用于验证）
-        password: "$2a$10$qZ7xQvFzG8yH9jK0lL1mN2oP3qR4sT5uV6wX7yZ8aB9cD0eF1g",
-        role: "admin",
-        permissions: ["view_all", "edit_content", "manage_users", "system_setting"],
-        createTime: "2025-01-01",
-        lastLogin: ""
-      },
-      {
-        username: "guest",
-        // 密码 guest123 的真实bcrypt加密值
-        password: "$2a$10$aB3cD4eF5gH6jK7lM8nO9pQ0rS1tU2vW3xY4zA5bB6cC7dD8e",
-        role: "guest",
-        permissions: ["view_public"],
-        createTime: "2025-01-01",
-        lastLogin: ""
-      }
-    ];
-
-    // 密码加密对比工具
-    const PasswordTool = {
-      // 对比密码（登录时验证：明文密码 vs 加密密码）
-      async comparePassword(plainPassword, hashedPassword) {
-        try {
-          // bcrypt自动提取加密值中的盐值进行对比，无需手动处理
-          return await bcrypt.compare(plainPassword, hashedPassword);
-        } catch (error) {
-          console.error('密码对比失败：', error);
-          throw new Error('登录验证出错，请重试');
-        }
+    // 从本地存储获取登录状态
+    const loginUser = JSON.parse(localStorage.getItem('loginUser'));
+    
+    // 初始化页面状态
+    window.onload = function() {
+      const userInfo = document.getElementById('userInfo');
+      const usernameDisplay = document.getElementById('usernameDisplay');
+      const userRole = document.getElementById('userRole');
+      const loginLink = document.getElementById('loginLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+      
+      // 如果已登录，显示用户信息，隐藏登录链接
+      if (loginUser) {
+        userInfo.style.display = 'flex';
+        usernameDisplay.textContent = `欢迎，${loginUser.username}`;
+        userRole.textContent = loginUser.role === 'admin' ? '管理员' : '游客';
+        loginLink.style.display = 'none';
+        
+        // 退出登录功能
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('loginUser');
+          window.location.reload(); // 刷新页面回到未登录状态
+        });
+      } else {
+        // 未登录，隐藏用户信息，显示登录链接
+        userInfo.style.display = 'none';
+        loginLink.style.display = 'block';
       }
     };
-
-    // 关闭蒙版功能（已移除蒙版，保留兼容代码）
-    if (document.getElementById('oiMaskSkipBtn')) {
-      document.getElementById('oiMaskSkipBtn').addEventListener('click', function() {
-        document.getElementById('oiStartMask').style.display = 'none';
-      });
-    }
-    
-    // 登录表单处理（完善的验证逻辑）
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault(); // 阻止表单默认提交
-      
-      // 获取用户输入
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      
-      // 表单验证
-      if (!username || !password) {
-        alert('❌ 用户名和密码不能为空！');
-        return;
-      }
-      
-      // 查找用户
-      const user = userDatabase.find(u => u.username === username);
-      if (!user) {
-        alert('❌ 用户名不存在！');
-        return;
-      }
-      
-      try {
-        // 对比密码
-        const isPasswordCorrect = await PasswordTool.comparePassword(password, user.password);
-        
-        if (isPasswordCorrect) {
-          // 登录成功：更新最后登录时间
-          user.lastLogin = new Date().toLocaleString();
-          
-          // 根据用户角色显示不同欢迎信息
-          let welcomeMsg = user.role === 'admin' 
-            ? `🎉 管理员 ${username} 登录成功！\n\n您拥有的权限：\n${user.permissions.join('、')}\n\n最后登录时间：${user.lastLogin}`
-            : `👋 游客 ${username} 登录成功！\n\n您的权限：${user.permissions[0]}\n\n最后登录时间：${user.lastLogin}`;
-          
-          alert(welcomeMsg);
-          
-          // 这里可添加跳转逻辑（例如跳转到管理员后台）
-          // if (user.role === 'admin') window.location.href = 'admin.html';
-        } else {
-          // 密码错误
-          alert('❌ 密码错误！请重新输入');
-        }
-      } catch (error) {
-        alert('❌ ' + error.message);
-      }
-    });
     
     // 平滑滚动
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -470,4 +335,18 @@
         var s = document.createElement('script');
         s.defer = true;
         s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-        s.setAttribute('data-cf-beacon',
+        s.setAttribute('data-cf-beacon', '{"token": "cd3db41765ea4c17be0930b3f94e3c3a"}');
+        document.head.appendChild(s);
+      }
+      function shouldLoad(){
+        try{
+          var start = (performance.timing && performance.timing.navigationStart) || 0;
+          var elapsed = performance.now ? performance.now() : (Date.now() - start);
+          return elapsed <= 2000;
+        }catch(e){ return false; }
+      }
+      document.addEventListener('DOMContentLoaded', function(){ if(shouldLoad()) injectCF(); });
+    })();
+  </script>
+</body>
+</html>
