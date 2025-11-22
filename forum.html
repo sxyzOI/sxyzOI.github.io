@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>sxyzOI网 - 讨论区</title>
+  <style>
+    /* 全局样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #475569;
+      --light: #f8fafc;
+      --dark: #0f172a;
+      --success: #10b981;
+      --error: #ef4444;
+      --gray: #94a3b8;
+      --gray-light: #e2e8f0;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      color: var(--dark);
+      background-color: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* 导航栏 */
+    .navbar {
+      background-color: var(--dark);
+      color: white;
+      padding: 1rem 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    .navbar-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      text-decoration: none;
+      margin-left: 1rem;
+    }
+    
+    .logo span {
+      color: var(--primary);
+    }
+    
+    /* 登录用户信息 */
+    .user-info {
+      position: absolute;
+      top: 50%;
+      left: 2rem;
+      transform: translateY(-50%);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .user-info .user-role {
+      font-size: 0.8rem;
+      background-color: var(--primary);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    
+    .logout-btn {
+      background-color: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .logout-btn:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      margin-left: auto;
+      padding-right: 1rem;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    /* 帖子区样式 */
+    .forum-section {
+      flex: 1;
+      padding: 3rem 0;
+    }
+    
+    .forum-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .forum-title {
+      font-size: 2rem;
+      color: var(--dark);
+      font-weight: 600;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      font-size: 1rem;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    /* 帖子列表 */
+    .post-list {
+      display: grid;
+      gap: 1.5rem;
+    }
+    
+    .post-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .post-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .post-title {
+      font-size: 1.4rem;
+      color: var(--dark);
+      margin: 0;
+    }
+    
+    .post-title a {
+      color: var(--dark);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .post-title a:hover {
+      color: var(--primary);
+    }
+    
+    .post-meta {
+      display: flex;
+      gap: 1.5rem;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .post-content {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .post-author {
+      font-weight: 500;
+      color: var(--primary);
+    }
+    
+    .post-stats {
+      display: flex;
+      gap: 1.5rem;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    
+    /* 帖子操作按钮（管理员可见） */
+    .post-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .post-btn {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+    }
+    
+    .edit-btn {
+      background-color: #f0f9ff;
+      color: var(--primary);
+    }
+    
+    .delete-btn {
+      background-color: #fee2e2;
+      color: var(--error);
+    }
+    
+    /* 帖子详情模态框（默认隐藏） */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 2rem;
+      transform: translateY(-20px);
+      transition: transform 0.3s;
+    }
+    
+    .modal.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .modal-title {
+      font-size: 1.8rem;
+      color: var(--dark);
+      margin: 0;
+    }
+    
+    .close-modal {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray);
+      transition: color 0.3s;
+    }
+    
+    .close-modal:hover {
+      color: var(--error);
+    }
+    
+    .modal-body {
+      color: var(--secondary);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+    
+    .modal-footer {
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-light);
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    /* 发布/编辑帖子表单（默认隐藏） */
+    .post-form-modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    
+    .post-form-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .form-content {
+      background-color: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 800px;
+      padding: 2rem;
+      transform: translateY(-20px);
+      transition: transform 0.3s;
+    }
+    
+    .post-form-modal.active .form-content {
+      transform: translateY(0);
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--secondary);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 1px solid var(--gray-light);
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    
+    textarea.form-control {
+      min-height: 200px;
+      resize: vertical;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .btn-cancel {
+      background-color: var(--gray-light);
+      color: var(--secondary);
+    }
+    
+    .btn-cancel:hover {
+      background-color: var(--gray);
+      color: white;
+    }
+    
+    /* 无帖子提示 */
+    .no-posts {
+      text-align: center;
+      padding: 4rem 2rem;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      color: var(--gray);
+    }
+    
+    .no-posts h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--secondary);
+    }
+    
+    /* 页脚 */
+    .footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+      margin-top: auto;
+    }
+    
+    .footer p {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .navbar-container {
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+      }
+      
+      .user-info {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+        margin-bottom: 1rem;
+      }
+      
+      .nav-links {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+        padding-right: 0;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      
+      .forum-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .post-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      
+      .modal-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container container">
+      <!-- 登录用户信息（默认隐藏，登录后显示） -->
+      <div id="userInfo" class="user-info" style="display: none;">
+        <span id="usernameDisplay"></span>
+        <span id="userRole" class="user-role"></span>
+        <button id="logoutBtn" class="logout-btn">退出登录</button>
+      </div>
+      
+      <a href="index.html" class="logo">sxyz<span>OI</span>网</a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="index.html#about">关于</a>
+        <a href="forum.html" class="active">讨论区</a>
+        <a href="login.html" id="loginLink">登录</a>
+        <a href="https://www.sxdyzx.com.cn/">学校官网</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 帖子区 -->
+  <section class="forum-section">
+    <div class="container">
+      <div class="forum-header">
+        <h1 class="forum-title">OI讨论区</h1>
+        <!-- 管理员可见：发布帖子按钮 -->
+        <button id="createPostBtn" class="btn btn-primary" style="display: none;">发布新帖子</button>
+      </div>
+      
+      <!-- 帖子列表（动态渲染） -->
+      <div class="post-list" id="postList">
+        <!-- 帖子将通过JS从localStorage动态加载 -->
+      </div>
+      
+      <!-- 无帖子提示 -->
+      <div id="noPosts" class="no-posts" style="display: none;">
+        <h3>暂无帖子</h3>
+        <p>快来发布第一个帖子，开启讨论吧～</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 帖子详情模态框 -->
+  <div class="modal" id="postDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalPostTitle"></h2>
+        <button class="close-modal" id="closeDetailModal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalPostContent"></div>
+      <div class="modal-footer" id="modalPostFooter"></div>
+    </div>
+  </div>
+
+  <!-- 发布/编辑帖子表单模态框 -->
+  <div class="post-form-modal" id="postFormModal">
+    <div class="form-content">
+      <h2 id="formTitle">发布新帖子</h2>
+      <form id="postForm">
+        <input type="hidden" id="editPostId"> <!-- 编辑时存储帖子ID -->
+        <div class="form-group">
+          <label for="postTitle">帖子标题</label>
+          <input type="text" id="postTitle" class="form-control" placeholder="请输入帖子标题" required>
+        </div>
+        <div class="form-group">
+          <label for="postCategory">分类</label>
+          <input type="text" id="postCategory" class="form-control" placeholder="例如：算法入门、比赛经验" required>
+        </div>
+        <div class="form-group">
+          <label for="postContent">帖子内容</label>
+          <textarea id="postContent" class="form-control" placeholder="请输入帖子详细内容" required></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" id="cancelPost">取消</button>
+          <button type="submit" class="btn btn-primary">发布</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 sxyzOI网 - sxyzOI网</p>
+      <p style="margin-top: 0.5rem; opacity: 0.6;">网站建设中，敬请期待更多功能...</p>
+    </div>
+  </footer>
+
+  <script>
+    // ====================== 本地存储工具 ======================
+    const StorageTool = {
+      // 获取帖子列表
+      getPosts() {
+        const posts = localStorage.getItem('sxyzoi_posts');
+        return posts ? JSON.parse(posts) : [
+          // 初始化默认帖子（首次打开时显示）
+          {
+            id: 1,
+            title: "如何入门算法竞赛？分享我的学习路线",
+            category: "算法入门",
+            content: "作为一名刚入门OI半年的蒟蒻，分享一下我的学习路线：\n1. 语法基础：先掌握C++核心语法（循环、条件、函数、数组、指针等）\n2. 数据结构：学习链表、栈、队列、二叉树、图、哈希表等基础结构\n3. 算法模板：背诵并理解常用算法（排序、二分、BFS/DFS、动态规划等）\n4. 刷题平台：洛谷、Codeforces、AcWing等，从简单题开始逐步提升\n\n有没有大佬能指点一下后续该重点突破哪些算法？或者推荐一些好的学习资源？",
+            author: "onE4_10",
+            createTime: "2025-01-10",
+            viewCount: 32,
+            commentCount: 5
+          },
+          {
+            id: 2,
+            title: "洛谷P1001题解（新手向）",
+            category: "题解分享",
+            content: "洛谷P1001是入门必做题，题目要求计算a+b的值，看似简单但有一些坑点：\n1. 输入可能是负数，需要注意符号处理\n2. 数据范围可能较大，建议用long long类型\n3. 输入输出格式要严格按照题目要求\n\n代码示例：\n#include <iostream>\nusing namespace std;\nint main() {\n    long long a, b;\n    cin >> a >> b;\n    cout << a + b << endl;\n    return 0;\n}\n\n新手如果有疑问可以在评论区交流～",
+            author: "guest",
+            createTime: "2025-01-12",
+            viewCount: 45,
+            commentCount: 3
+          }
+        ];
+      },
+
+      // 保存帖子列表
+      savePosts(posts) {
+        localStorage.setItem('sxyzoi_posts', JSON.stringify(posts));
+      },
+
+      // 添加新帖子
+      addPost(post) {
+        const posts = this.getPosts();
+        const newId = posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1;
+        const newPost = {
+          id: newId,
+          ...post,
+          viewCount: 0,
+          commentCount: 0,
+          createTime: new Date().toLocaleDateString()
+        };
+        posts.unshift(newPost); // 新增帖子排在最前面
+        this.savePosts(posts);
+        return newPost;
+      },
+
+      // 更新帖子
+      updatePost(id, updatedPost) {
+        const posts = this.getPosts();
+        const index = posts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          posts[index] = { ...posts[index], ...updatedPost };
+          this.savePosts(posts);
+          return posts[index];
+        }
+        return null;
+      },
+
+      // 删除帖子
+      deletePost(id) {
+        let posts = this.getPosts();
+        posts = posts.filter(p => p.id !== id);
+        this.savePosts(posts);
+        return posts;
+      },
+
+      // 根据ID获取帖子
+      getPostById(id) {
+        const posts = this.getPosts();
+        return posts.find(p => p.id === id) || null;
+      },
+
+      // 增加帖子浏览量
+      increaseViewCount(id) {
+        const posts = this.getPosts();
+        const index = posts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          posts[index].viewCount++;
+          this.savePosts(posts);
+        }
+      }
+    };
+
+    // ====================== 页面初始化 ======================
+    let loginUser = JSON.parse(localStorage.getItem('loginUser')); // 当前登录用户
+    const postListEl = document.getElementById('postList');
+    const noPostsEl = document.getElementById('noPosts');
+    const createPostBtn = document.getElementById('createPostBtn');
+    const postFormModal = document.getElementById('postFormModal');
+    const postDetailModal = document.getElementById('postDetailModal');
+    const postForm = document.getElementById('postForm');
+
+    // 初始化页面状态
+    window.onload = function() {
+      // 初始化用户状态（显示/隐藏登录信息、发布按钮）
+      initUserStatus();
+      // 渲染帖子列表
+      renderPostList();
+      // 绑定事件监听
+      bindEvents();
+    };
+
+    // ====================== 功能函数 ======================
+    // 初始化用户状态
+    function initUserStatus() {
+      const userInfo = document.getElementById('userInfo');
+      const usernameDisplay = document.getElementById('usernameDisplay');
+      const userRole = document.getElementById('userRole');
+      const loginLink = document.getElementById('loginLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (loginUser) {
+        // 已登录：显示用户信息，隐藏登录链接
+        userInfo.style.display = 'flex';
+        usernameDisplay.textContent = `欢迎，${loginUser.username}`;
+        userRole.textContent = loginUser.role === 'admin' ? '管理员' : '游客';
+        loginLink.style.display = 'none';
+
+        // 管理员显示发布帖子按钮
+        if (loginUser.role === 'admin') {
+          createPostBtn.style.display = 'block';
+        }
+
+        // 退出登录
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('loginUser');
+          window.location.reload();
+        });
+      } else {
+        // 未登录：隐藏用户信息，显示登录链接
+        userInfo.style.display = 'none';
+        loginLink.style.display = 'block';
+        createPostBtn.style.display = 'none';
+      }
+    }
+
+    // 渲染帖子列表
+    function renderPostList() {
+      const posts = StorageTool.getPosts();
+      
+      // 显示无帖子提示或帖子列表
+      if (posts.length === 0) {
+        postListEl.style.display = 'none';
+        noPostsEl.style.display = 'block';
+        return;
+      }
+
+      postListEl.style.display = 'grid';
+      noPostsEl.style.display = 'none';
+
+      // 清空现有列表
+      postListEl.innerHTML = '';
+
+      // 渲染每个帖子
+      posts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = 'post-card';
+        postCard.dataset.postId = post.id;
+
+        // 帖子操作按钮（仅管理员或帖子作者可见）
+        const actionBtns = loginUser && (loginUser.role === 'admin' || loginUser.username === post.author) 
+          ? `
+            <div class="post-actions">
+              <button class="post-btn edit-btn" data-id="${post.id}">编辑</button>
+              <button class="post-btn delete-btn" data-id="${post.id}">删除</button>
+            </div>
+          `
+          : '';
+
+        postCard.innerHTML = `
+          <div class="post-header">
+            <h2 class="post-title"><a href="javascript:;" class="post-link" data-id="${post.id}">${post.title}</a></h2>
+            <div class="post-meta">
+              <span>${post.createTime}</span>
+              <span>${post.category}</span>
+            </div>
+          </div>
+          <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
+          <div class="post-footer">
+            <span>作者：<span class="post-author">${post.author}</span></span>
+            <div class="post-stats">
+              <div class="stat-item">👁️ ${post.viewCount}</div>
+              <div class="stat-item">💬 ${post.commentCount}</div>
+            </div>
+            ${actionBtns}
+          </div>
+        `;
+
+        postListEl.appendChild(postCard);
+      });
+    }
+
+    // 显示帖子详情
+    function showPostDetail(id) {
+      const post = StorageTool.getPostById(id);
+      if (!post) return;
+
+      // 增加浏览量
+      StorageTool.increaseViewCount(id);
+
+      // 填充模态框内容
+      document.getElementById('modalPostTitle').textContent = post.title;
+      document.getElementById('modalPostContent').innerHTML = post.content.replace(/\n/g, '<br>');
+      document.getElementById('modalPostFooter').innerHTML = `
+        作者：<span class="post-author">${post.author}</span> | 
+        发布时间：${post.createTime} | 
+        浏览：${post.viewCount + 1} 次 | 
+        评论：${post.commentCount} 条
+      `;
+
+      // 显示模态框
+      postDetailModal.classList.add('active');
+    }
+
+    // 打开发布/编辑帖子表单
+    function openPostForm(postId = null) {
+      const formTitle = document.getElementById('formTitle');
+      const editPostId = document.getElementById('editPostId');
+      const postTitleInput = document.getElementById('postTitle');
+      const postCategoryInput = document.getElementById('postCategory');
+      const postContentInput = document.getElementById('postContent');
+
+      if (postId) {
+        // 编辑模式：填充现有帖子内容
+        const post = StorageTool.getPostById(postId);
+        if (!post) return;
+
+        formTitle.textContent = '编辑帖子';
+        editPostId.value = postId;
+        postTitleInput.value = post.title;
+        postCategoryInput.value = post.category;
+        postContentInput.value = post.content;
+      } else {
+        // 发布模式：清空表单
+        formTitle.textContent = '发布新帖子';
+        editPostId.value = '';
+        postTitleInput.value = '';
+        postCategoryInput.value = '';
+        postContentInput.value = '';
+      }
+
+      // 显示表单模态框
+      postFormModal.classList.add('active');
+    }
+
+    // ====================== 事件绑定 ======================
+    function bindEvents() {
+      // 发布帖子按钮点击
+      createPostBtn.addEventListener('click', () => openPostForm());
+
+      // 取消发布/编辑
+      document.getElementById('cancelPost').addEventListener('click', () => {
+        postFormModal.classList.remove('active');
+      });
+
+      // 关闭帖子详情
+      document.getElementById('closeDetailModal').addEventListener('click', () => {
+        postDetailModal.classList.remove('active');
+      });
+
+      // 点击模态框外部关闭
+      postDetailModal.addEventListener('click', (e) => {
+        if (e.target === postDetailModal) postDetailModal.classList.remove('active');
+      });
+      postFormModal.addEventListener('click', (e) => {
+        if (e.target === postFormModal) postFormModal.classList.remove('active');
+      });
+
+      // 帖子表单提交（发布/编辑）
+      postForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const editPostId = document.getElementById('editPostId').value;
+        const postData = {
+          title: document.getElementById('postTitle').value.trim(),
+          category: document.getElementById('postCategory').value.trim(),
+          content: document.getElementById('postContent').value.trim(),
+          author: loginUser.username // 作者为当前登录用户
+        };
+
+        if (editPostId) {
+          // 编辑帖子
+          StorageTool.updatePost(Number(editPostId), postData);
+          alert('✅ 帖子编辑成功！');
+        } else {
+          // 发布新帖子
+          StorageTool.addPost(postData);
+          alert('✅ 帖子发布成功！');
+        }
+
+        // 关闭模态框，重新渲染列表
+        postFormModal.classList.remove('active');
+        renderPostList();
+      });
+
+      // 帖子列表点击事件（查看详情、编辑、删除）
+      postListEl.addEventListener('click', (e) => {
+        const postLink = e.target.closest('.post-link');
+        const editBtn = e.target.closest('.edit-btn');
+        const deleteBtn = e.target.closest('.delete-btn');
+
+        if (postLink) {
+          // 查看帖子详情
+          const postId = Number(postLink.dataset.id);
+          showPostDetail(postId);
+        } else if (editBtn) {
+          // 编辑帖子（需登录）
+          if (!loginUser) {
+            alert('❌ 请先登录后再编辑帖子！');
+            window.location.href = 'login.html';
+            return;
+          }
+          const postId = Number(editBtn.dataset.id);
+          openPostForm(postId);
+        } else if (deleteBtn) {
+          // 删除帖子（需登录）
+          if (!loginUser) {
+            alert('❌ 请先登录后再删除帖子！');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          if (confirm('⚠️ 确定要删除这个帖子吗？删除后不可恢复！')) {
+            const postId = Number(deleteBtn.dataset.id);
+            StorageTool.deletePost(postId);
+            renderPostList();
+            alert('✅ 帖子删除成功！');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
