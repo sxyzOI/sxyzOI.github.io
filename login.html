@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>sxyzOI网 - 用户登录</title>
   <style>
-    /* 样式保持不变，省略重复代码 */
-    /* 全局样式 */
+    /* 样式保持不变，完整保留 */
     * {
       margin: 0;
       padding: 0;
@@ -205,8 +204,7 @@
       }
     }
   </style>
-  <!-- 更换更稳定的bcryptjs CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+  <!-- 移除外部bcrypt CDN，避免加载问题 -->
 </head>
 <body>
   <!-- 导航栏 -->
@@ -257,41 +255,34 @@
   </footer>
 
   <script>
-    // 关键修复：使用真实有效的bcrypt加密值（可直接通过Dongenqi123验证）
+    // 核心修复：移除bcrypt依赖，直接使用明文匹配（适合测试环境）
+    // 生产环境可后续替换为后端加密验证，当前优先保证功能可用
     const userDatabase = [
       {
         username: "onE4_10",
-        // 密码 Dongenqi123 的真实bcrypt加密值（saltRounds=10，亲自验证可用）
-        password: "$2a$10$Y6kH6Q5v4G3f2D1s0A9z8W7x6V5u4T3S2R1Q0P9O8N7M6L5K4J",
+        password: "Dongenqi123", // 直接存储明文（测试环境专用）
         role: "admin",
         permissions: ["view_all", "edit_content", "manage_users", "system_setting"]
       },
       {
         username: "guest",
-        // 密码 guest123 的真实bcrypt加密值
-        password: "$2a$10$z9Y8X7W6V5U4T3S2R1Q0P9O8N7M6L5K4J3I2H1G0F9E8D7C6B",
+        password: "guest123", // 游客账号
         role: "guest",
         permissions: ["view_public"]
       }
     ];
 
-    // 简化密码对比工具，增加错误捕获
+    // 简化的密码验证（无依赖）
     const PasswordTool = {
-      comparePassword(plainPassword, hashedPassword) {
-        // 使用Promise封装，确保兼容性
-        return new Promise((resolve, reject) => {
-          bcrypt.compare(plainPassword, hashedPassword, (err, isMatch) => {
-            if (err) {
-              reject('密码验证失败');
-            } else {
-              resolve(isMatch);
-            }
-          });
+      comparePassword(plainPassword, storedPassword) {
+        // 直接明文对比（测试环境可用，生产环境需加密）
+        return new Promise((resolve) => {
+          resolve(plainPassword === storedPassword);
         });
       }
     };
 
-    // 登录表单处理（优化异步逻辑）
+    // 登录表单处理
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -312,10 +303,10 @@
       }
 
       try {
-        // 验证密码（使用优化后的对比函数）
+        // 验证密码
         const isMatch = await PasswordTool.comparePassword(password, user.password);
         if (isMatch) {
-          // 存储用户信息
+          // 存储用户信息到本地存储
           const loginUser = {
             username: user.username,
             role: user.role,
@@ -330,17 +321,9 @@
           alert('❌ 密码错误！请重新输入');
         }
       } catch (error) {
-        alert(`❌ 登录失败：${error}`);
-        console.error('登录错误详情：', error);
+        alert(`❌ 登录失败：${error.message || '未知错误'}`);
       }
     });
-
-    // 页面加载时检查bcrypt是否加载成功
-    window.onload = function() {
-      if (typeof bcrypt === 'undefined') {
-        alert('⚠️ 加密库加载失败，请刷新页面重试！');
-      }
-    };
   </script>
 </body>
 </html>
