@@ -1,7 +1,5 @@
-This is a pragram of beginner.
+你们懂我啥意思，目前主站没有整的很好
 
-So it could be many error
+因为我没有云服务器可以租
 
-Oh Shit ，This is so difficult to learn ** html **
-
-be written form $$ onE4_10 $$
+好吧，拜拜
