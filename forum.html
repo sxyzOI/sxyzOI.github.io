@@ -613,39 +613,73 @@
   </footer>
 
   <script>
+    // ====================== 工具函数 ======================
+    // 格式化日期为 YYYY-MM-DD
+    function formatDate(date) {
+      if (typeof date === 'string') return date; // 如果已经是字符串直接返回
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // 简单的Markdown转HTML
+    function markdownToHtml(content) {
+      if (!content) return '';
+      
+      return content
+        .replace(/# (.*?)\n/g, '<h1>$1</h1>') // 一级标题
+        .replace(/## (.*?)\n/g, '<h2>$1</h2>') // 二级标题
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 粗体
+        .replace(/`(.*?)`/g, '<span class="highlight">$1</span>') // 代码片段
+        .replace(/---/g, '<hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--gray-light);">') // 分隔线
+        .replace(/(\d+)\. (.*?)(?=\n|$)/g, '<li>$2</li>') // 数字列表项
+        .replace(/(首先，|其次，|然后)(.*?)(?=\n|$)/g, '<li>$1$2</li>') // 中文列表项
+        .replace(/(<li>.*<\/li>)+/g, '<ul>$&</ul>') // 包裹列表项
+        .replace(/\n/g, '<br>'); // 换行
+    }
+
     // ====================== 本地存储工具 ======================
     const StorageTool = {
       // 获取帖子列表
       getPosts() {
         const posts = localStorage.getItem('sxyzoi_posts');
         return posts ? JSON.parse(posts) : [
-          // 新增你的帖子作为默认初始帖子
-          [
-                  {
-                    "id": 1,
-                    "title": "雷：进食后人",
-                    "category": "比赛经验",
-                    "content": "# 这是一个悲伤的故事\n\n首先，发表一下我的感想：\n\n这次主要还是**能力的欠缺**吧，因为确实加上爆0的分也拿不到省1，主要总结一下错误的原因：\n\n1. **过于轻视数据的强度了**\n   感觉用纯贪心的分能比特殊性质稍微高一点，所以用了贪心而不是特殊性质来做，实际得分贪心只有特殊性质的一半 😭\n\n2. **没有计算好空间**\n   还是不太有经验吧，因为想着以前开一个 `1e9+10` 的桶还是可以存下的，所以就整了个 `1e4+10` 的错误捏～\n   如你们所见，我的用户名已经改成 `1e4+10` 了（纪念这个愚蠢的错误）\n\n---\n\n## 进食后人（总结）\n\n首先，计算好空间\n其次，相信数据强度\n然后就没了～",
-                    "author": "onE4_10",
-                    "createTime": "2025-01-15",
-                    "viewCount": 18,
-                    "commentCount": 2
-                  },
-                  {
-                    "id": 2,
-                    "title": "唐人利益穿",
-                    "category": "唐人分享",
-                    "content": "# 首先，利益穿臭唐人\n\n唐人chuanchuanchuan\n\n我为了防止利益穿骂我所以移除了访客发布评论\n\n1. **你就在这里看着吧**\n   哈哈哈哈哈 ",
-                    "author": "onE4_10",
-                    "createTime": "2025-01-15",
-                    "viewCount": 18,
-                    "commentCount": 2
-                  }
-                  
-];
-      
+          // 修复：移除双层数组，只保留单层数组
+          {
+            "id": 1,
+            "title": "雷：进食后人",
+            "category": "比赛经验",
+            "content": "# 这是一个悲伤的故事\n\n首先，发表一下我的感想：\n\n这次主要还是**能力的欠缺**吧，因为确实加上爆0的分也拿不到省1，主要总结一下错误的原因：\n\n1. **过于轻视数据的强度了**\n   感觉用纯贪心的分能比特殊性质稍微高一点，所以用了贪心而不是特殊性质来做，实际得分贪心只有特殊性质的一半 😭\n\n2. **没有计算好空间**\n   还是不太有经验吧，因为想着以前开一个 `1e9+10` 的桶还是可以存下的，所以就整了个 `1e4+10` 的错误捏～\n   如你们所见，我的用户名已经改成 `1e4+10` 了（纪念这个愚蠢的错误）\n\n---\n\n## 进食后人（总结）\n\n首先，计算好空间\n其次，相信数据强度\n然后就没了～",
+            "author": "onE4_10",
+            "createTime": "2025-01-15",
+            "viewCount": 18,
+            "commentCount": 2
+          },
+          {
+            "id": 2,
+            "title": "唐人利益穿",
+            "category": "唐人分享",
+            "content": "# 首先，利益穿臭唐人\n\n唐人chuanchuanchuan\n\n我为了防止利益穿骂我所以移除了访客发布评论\n\n1. **你就在这里看着吧**\n   哈哈哈哈哈 ",
+            "author": "onE4_10",
+            "createTime": "2025-01-15",
+            "viewCount": 18,
+            "commentCount": 2
+          },
+          {
+            "id": 3,
+            "title": "福瑞孙火花",
+            "category": "福瑞分享",
+            "content": "# 孙红叶福瑞fu\n\n福瑞福瑞福瑞\n\n福瑞福瑞\n\n1. **孙火花臭福瑞**\n   哈哈哈哈哈 ",
+            "author": "onE4_10",
+            "createTime": "2026-03-12",
+            "viewCount": 1,
+            "commentCount": 0
+          }
+        ];
       },
-
+      
       // 保存帖子列表
       savePosts(posts) {
         localStorage.setItem('sxyzoi_posts', JSON.stringify(posts));
@@ -660,7 +694,7 @@
           ...post,
           viewCount: 0,
           commentCount: 0,
-          createTime: new Date().toLocaleDateString()
+          createTime: formatDate(new Date()) // 统一日期格式
         };
         posts.unshift(newPost); // 新增帖子排在最前面
         this.savePosts(posts);
@@ -736,7 +770,7 @@
         // 已登录：显示用户信息，隐藏登录链接
         userInfo.style.display = 'flex';
         usernameDisplay.textContent = `欢迎，${loginUser.username}`;
-        userRole.textContent = loginUser.role === 'admin' ? '管理员' : '游客';
+        userRole.textContent = loginUser.role === 'admin' ? '管理员' : '普通用户';
         loginLink.style.display = 'none';
 
         // 管理员显示发布帖子按钮
@@ -789,7 +823,8 @@
           .replace(/\n/g, '<br>');
 
         // 帖子操作按钮（仅管理员或帖子作者可见）
-        const actionBtns = loginUser && (loginUser.role === 'admin' || loginUser.username === post.author) 
+        const canModify = loginUser && (loginUser.role === 'admin' || loginUser.username === post.author);
+        const actionBtns = canModify
           ? `
             <div class="post-actions">
               <button class="post-btn edit-btn" data-id="${post.id}">编辑</button>
@@ -826,20 +861,13 @@
       const post = StorageTool.getPostById(id);
       if (!post) return;
 
-      // 增加浏览量
-      StorageTool.increaseViewCount(id);
+      // 增加浏览量（仅对非作者/未登录用户）
+      if (!loginUser || loginUser.username !== post.author) {
+        StorageTool.increaseViewCount(id);
+      }
 
       // 处理Markdown内容转换为HTML
-      let htmlContent = post.content
-        .replace(/# (.*?)\n/g, '<h1>$1</h1>') // 一级标题
-        .replace(/## (.*?)\n/g, '<h2>$1</h2>') // 二级标题
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 粗体
-        .replace(/`(.*?)`/g, '<span class="highlight">$1</span>') // 代码片段
-        .replace(/---/g, '<hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--gray-light);">') // 分隔线
-        .replace(/\n/g, '<br>') // 换行
-        .replace(/1\. (.*?)(?=\n|$)/g, '<ul><li>$1</li></ul>') // 列表项
-        .replace(/其次，(.*?)(?=\n|$)/g, '<li>$1</li>')
-        .replace(/然后(.*?)(?=\n|$)/g, '<li>$1</li>');
+      const htmlContent = markdownToHtml(post.content);
 
       // 填充模态框内容
       document.getElementById('modalPostTitle').textContent = post.title;
@@ -847,7 +875,7 @@
       document.getElementById('modalPostFooter').innerHTML = `
         作者：<span class="post-author">${post.author}</span> | 
         发布时间：${post.createTime} | 
-        浏览：${post.viewCount + 1} 次 | 
+        浏览：${post.viewCount + ( (!loginUser || loginUser.username !== post.author) ? 1 : 0 )} 次 | 
         评论：${post.commentCount} 条
       `;
 
@@ -857,6 +885,13 @@
 
     // 打开发布/编辑帖子表单
     function openPostForm(postId = null) {
+      // 检查登录状态
+      if (!loginUser) {
+        alert('❌ 请先登录后再发布/编辑帖子！');
+        window.location.href = 'login.html';
+        return;
+      }
+
       const formTitle = document.getElementById('formTitle');
       const editPostId = document.getElementById('editPostId');
       const postTitleInput = document.getElementById('postTitle');
@@ -867,6 +902,12 @@
         // 编辑模式：填充现有帖子内容
         const post = StorageTool.getPostById(postId);
         if (!post) return;
+
+        // 权限校验
+        if (loginUser.role !== 'admin' && loginUser.username !== post.author) {
+          alert('❌ 你没有权限编辑该帖子！');
+          return;
+        }
 
         formTitle.textContent = '编辑帖子';
         editPostId.value = postId;
@@ -921,6 +962,12 @@
           author: loginUser.username // 作者为当前登录用户
         };
 
+        // 验证内容不为空
+        if (!postData.title || !postData.category || !postData.content) {
+          alert('❌ 标题、分类和内容都不能为空！');
+          return;
+        }
+
         if (editPostId) {
           // 编辑帖子
           StorageTool.updatePost(Number(editPostId), postData);
@@ -947,24 +994,27 @@
           const postId = Number(postLink.dataset.id);
           showPostDetail(postId);
         } else if (editBtn) {
-          // 编辑帖子（需登录）
-          if (!loginUser) {
-            alert('❌ 请先登录后再编辑帖子！');
-            window.location.href = 'login.html';
-            return;
-          }
+          // 编辑帖子
           const postId = Number(editBtn.dataset.id);
           openPostForm(postId);
         } else if (deleteBtn) {
-          // 删除帖子（需登录）
+          // 删除帖子
           if (!loginUser) {
             alert('❌ 请先登录后再删除帖子！');
             window.location.href = 'login.html';
             return;
           }
 
+          const postId = Number(deleteBtn.dataset.id);
+          const post = StorageTool.getPostById(postId);
+          
+          // 权限校验
+          if (loginUser.role !== 'admin' && loginUser.username !== post.author) {
+            alert('❌ 你没有权限删除该帖子！');
+            return;
+          }
+
           if (confirm('⚠️ 确定要删除这个帖子吗？删除后不可恢复！')) {
-            const postId = Number(deleteBtn.dataset.id);
             StorageTool.deletePost(postId);
             renderPostList();
             alert('✅ 帖子删除成功！');
